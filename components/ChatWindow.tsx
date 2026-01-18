@@ -35,7 +35,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, isLoading, onSendMess
   const handleSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if ((inputValue.trim() || selectedFile) && !isLoading) {
-      const content = inputValue.trim() || (selectedFile?.type.startsWith('audio/') ? "يرجى تحليل التسجيل الصوتي المرفق." : "يرجى تحليل الملف المرفق.");
+      const content = inputValue.trim() || (selectedFile?.type.startsWith('audio/') ? "يرجى تحليل التسجيل الصوتي المرفق والرد عليه." : "يرجى تحليل الملف المرفق.");
       onSendMessage(
         content, 
         selectedFile ? { data: selectedFile.data, mimeType: selectedFile.type } : undefined
@@ -73,9 +73,9 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, isLoading, onSendMess
         const reader = new FileReader();
         reader.onloadend = () => {
           const base64data = reader.result as string;
-          // إرسال تلقائي فور انتهاء التسجيل
+          // إرسال تلقائي فوري فور انتهاء التسجيل لضمان التحليل
           onSendMessage(
-            "يرجى تحليل هذا التسجيل الصوتي والرد عليه بنفس لغته.",
+            "يرجى تحليل هذا التسجيل الصوتي والرد عليه باحترافية وبنفس اللغة المستخدمة.",
             { data: base64data, mimeType: 'audio/webm' }
           );
         };
@@ -90,7 +90,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, isLoading, onSendMess
         setRecordingTime(prev => prev + 1);
       }, 1000);
     } catch (err) {
-      alert("يرجى منح صلاحية الميكروفون.");
+      alert("خطأ في الوصول للميكروفون. يرجى تفعيل الصلاحية.");
     }
   };
 
@@ -119,9 +119,9 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, isLoading, onSendMess
               </div>
             </div>
             <div className="space-y-3 px-4">
-              <h2 className="text-2xl md:text-3xl font-black text-slate-800">تحدث معي بالعربية أو الإنجليزية</h2>
+              <h2 className="text-2xl md:text-3xl font-black text-slate-800">تحدث معي بالعربية أو English</h2>
               <p className="text-slate-500 text-sm md:text-base leading-relaxed">
-                استخدم زر الميكروفون للتحدث مباشرة، أو اكتب استفسارك. سأقوم بتحليل صوتك والرد عليك فوراً.
+                اضغط مطولاً على الميكروفون للتحدث. سأقوم بتحليل صوتك فوراً والرد عليك بدقة أكاديمية عالية.
               </p>
             </div>
           </div>
@@ -155,7 +155,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, isLoading, onSendMess
           <div className="flex justify-start animate-fade">
             <div className="bg-white border border-slate-200 rounded-2xl px-5 py-4 shadow-sm flex items-center gap-3">
               <div className="w-5 h-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-              <span className="text-[11px] font-bold text-indigo-600 uppercase">جاري تحليل الصوت والرد...</span>
+              <span className="text-[11px] font-bold text-indigo-600 uppercase tracking-widest">جاري التحليل والرد...</span>
             </div>
           </div>
         )}
@@ -163,13 +163,26 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, isLoading, onSendMess
 
       <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8 bg-gradient-to-t from-slate-50 via-slate-50 to-transparent">
         <form onSubmit={handleSubmit} className="max-w-4xl mx-auto flex flex-col gap-2">
-          {isRecording && (
-            <div className="animate-fade flex items-center gap-3 p-3 bg-white border border-red-200 rounded-2xl w-fit shadow-xl">
-              <div className="flex gap-1 items-center">
-                <div className="w-1.5 h-4 bg-red-500 rounded-full animate-bounce"></div>
-                <div className="w-1.5 h-6 bg-red-500 rounded-full animate-bounce" style={{animationDelay:'0.1s'}}></div>
-              </div>
-              <span className="text-xs font-black text-slate-700">جاري التسجيل: {formatTime(recordingTime)}</span>
+          
+          {(selectedFile || isRecording) && (
+            <div className="animate-fade flex items-center gap-3 p-3 bg-white border border-indigo-200 rounded-2xl w-fit shadow-xl">
+              {isRecording ? (
+                <div className="flex items-center gap-3 px-2">
+                  <div className="flex gap-1 items-center">
+                    <div className="w-1.5 h-4 bg-red-500 rounded-full animate-bounce"></div>
+                    <div className="w-1.5 h-6 bg-red-500 rounded-full animate-bounce" style={{animationDelay:'0.1s'}}></div>
+                  </div>
+                  <span className="text-xs font-black text-slate-700">جاري التسجيل... {formatTime(recordingTime)}</span>
+                </div>
+              ) : selectedFile && (
+                <div className="flex items-center gap-2">
+                   <i className="fa-solid fa-file-audio text-indigo-600"></i>
+                   <span className="text-[11px] font-bold text-slate-700">{selectedFile.name}</span>
+                </div>
+              )}
+              <button type="button" onClick={() => { setSelectedFile(null); stopRecording(); }} className="text-slate-300 hover:text-red-500 transition-colors">
+                <i className="fa-solid fa-circle-xmark"></i>
+              </button>
             </div>
           )}
 
@@ -180,7 +193,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, isLoading, onSendMess
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }}
-              placeholder="اكتب هنا أو استمر بالضغط على الميكروفون للتحدث..."
+              placeholder="اكتب هنا أو استمر بالضغط على الميكروفون..."
               className="w-full bg-transparent border-none focus:ring-0 text-slate-800 py-5 pl-16 pr-6 pb-16 resize-none min-h-[70px]"
             />
             <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between">

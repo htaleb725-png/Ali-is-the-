@@ -12,7 +12,11 @@ export interface FileData {
 
 export class GeminiService {
   private getAI() {
+    // محاولة جلب المفتاح من البيئة، مع التأكد من عدم تعطل التطبيق في حال عدم وجوده
     const key = process.env.API_KEY || '';
+    if (!key) {
+      console.warn("Gemini API Key is missing. The app might not respond.");
+    }
     return new GoogleGenAI({ apiKey: key });
   }
 
@@ -32,15 +36,15 @@ export class GeminiService {
     const ai = this.getAI();
     const systemInstruction = this.getInstruction(mode);
     
-    const languageRule = "\nIMPORTANT: Always respond in the same language as the user's message or voice recording (Arabic or English). If the user speaks Arabic, reply in professional Arabic. If English, reply in academic English.";
+    const languageRule = "\nIMPORTANT: Always respond in the same language as the user's message or voice recording (Arabic or English). Maintain high academic/professional standards.";
 
-    // تحويل التاريخ إلى تنسيق Gemini
+    // تحويل التاريخ إلى تنسيق متوافق مع Gemini لضمان استمرارية السياق
     const contents = history.map(item => ({
       role: item.role === 'user' ? 'user' : 'model',
       parts: [{ text: String(item.content) }]
     }));
 
-    // إضافة الرسالة الحالية مع الملف إن وجد
+    // إضافة الرسالة الحالية مع الملف المرفق (صوت أو صورة)
     const currentParts: any[] = [{ text: prompt }];
     if (fileData) {
       currentParts.push(fileData);
@@ -51,16 +55,20 @@ export class GeminiService {
       parts: currentParts
     });
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: contents,
-      config: {
-        systemInstruction: systemInstruction + languageRule + "\nIf audio is provided, prioritize analyzing its content. Answer accurately.",
-        tools: [{ googleSearch: {} }],
-      },
-    });
-
-    return this.processResponse(response);
+    try {
+      const response = await ai.models.generateContent({
+        model: 'gemini-3-flash-preview',
+        contents: contents,
+        config: {
+          systemInstruction: systemInstruction + languageRule + "\nIf audio is provided, prioritize analyzing its content thoroughly and respond to it directly.",
+          tools: [{ googleSearch: {} }],
+        },
+      });
+      return this.processResponse(response);
+    } catch (err) {
+      console.error("Gemini API Call Failed:", err);
+      throw err;
+    }
   }
 
   private processResponse(response: GenerateContentResponse) {
@@ -79,7 +87,7 @@ export class GeminiService {
 
   async humanizeText(text: string) {
     return this.generateResponse(
-      `Please rewrite the following text to sound perfectly natural, human, and professional. It must bypass AI detection while maintaining the original meaning and language (Arabic/English): \n\n ${text}`,
+      `Please rewrite the following text to sound perfectly natural, human, and professional. It must bypass AI detection while maintaining the original meaning and language: \n\n ${text}`,
       AcademicMode.HUMANIZER
     );
   }
