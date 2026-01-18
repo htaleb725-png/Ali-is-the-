@@ -12,8 +12,12 @@ export interface FileData {
 
 export class GeminiService {
   private getAI() {
-    const key = process.env.API_KEY || '';
-    return new GoogleGenAI({ apiKey: key });
+    // التأكد من وجود المفتاح أو رمي خطأ واضح للمستخدم
+    const apiKey = process.env.API_KEY;
+    if (!apiKey) {
+      console.error("Missing API_KEY in environment variables.");
+    }
+    return new GoogleGenAI({ apiKey: apiKey || "" });
   }
 
   private getInstruction(mode: AcademicMode): string {
@@ -39,24 +43,32 @@ export class GeminiService {
       }));
 
       const currentParts: any[] = [];
-      if (fileData) currentParts.push(fileData);
-      currentParts.push({ text: prompt || "قم بتحليل المحتوى المرفق بأسلوب أكاديمي وبشري." });
+      if (fileData) {
+        currentParts.push(fileData);
+      }
+      
+      // إذا كان النص فارغاً والملف موجود، نضع أمراً افتراضياً للتحليل
+      currentParts.push({ text: prompt || "قم بتحليل المحتوى المرفق بدقة أكاديمية عالية ومصادر موثقة." });
 
       contents.push({ role: 'user', parts: currentParts });
 
-      // استخدام Gemini 3 Pro مع أدوات البحث لضمان المصادر
+      // استخدام طراز gemini-3-pro-preview للأبحاث المعقدة
       const response = await ai.models.generateContent({
         model: 'gemini-3-pro-preview',
         contents: contents,
         config: {
           systemInstruction: systemInstruction,
           tools: [{ googleSearch: {} }],
-          temperature: 0.9, // زيادة الحرارة تعزز العشوائية البشرية في الكتابة
-          topP: 0.95,
+          temperature: 0.7,
+          topP: 0.9,
         },
       });
 
-      const text = response.text || "عذراً، لم أتمكن من معالجة الطلب حالياً.";
+      if (!response || !response.text) {
+        throw new Error("تلقى النظام استجابة فارغة من المحرك.");
+      }
+
+      const text = response.text;
       const groundingMetadata = response.candidates?.[0]?.groundingMetadata;
       const urls = groundingMetadata?.groundingChunks?.map((chunk: any) => ({
         uri: chunk.web?.uri,
@@ -68,17 +80,19 @@ export class GeminiService {
         groundingUrls: urls
       };
     } catch (err: any) {
-      console.error("Gemini Service Error:", err);
-      if (err.message?.includes("API_KEY")) {
-        throw new Error("مفتاح API غير صالح أو مفقود.");
-      }
-      throw new Error("فشل الاتصال بالمحرك. يرجى التحقق من جودة الإنترنت.");
+      console.error("Gemini Critical Error:", err);
+      // تخصيص رسالة الخطأ لتكون مفهومة للمستخدم في الاستضافة
+      let userError = "حدث خطأ أثناء الاتصال بالخادم الأكاديمي.";
+      if (err.message?.includes("API_KEY")) userError = "مفتاح الربط (API Key) غير معد بشكل صحيح في الاستضافة.";
+      if (err.message?.includes("fetch")) userError = "فشل في الاتصال بالإنترنت أو تم حظر الطلب من الاستضافة.";
+      
+      throw new Error(userError);
     }
   }
 
   async humanizeText(text: string) {
     return this.generateResponse(
-      `حول النص التالي إلى أسلوب بشري تماماً (Human-like) بليغ وأكاديمي بحيث يتجاوز كواشف الذكاء الاصطناعي بنسبة 100%: \n\n ${text}`,
+      `أعد صياغة النص التالي بأسلوب بشري 100%، استخدم تعبيرات بليغة وتجنب الأسلوب النمطي للذكاء الاصطناعي لضمان تجاوز الفحص: \n\n ${text}`,
       AcademicMode.HUMANIZER
     );
   }

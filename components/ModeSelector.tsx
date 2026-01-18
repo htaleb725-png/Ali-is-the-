@@ -10,19 +10,19 @@ interface ModeSelectorProps {
 
 const ModeSelector: React.FC<ModeSelectorProps> = ({ currentMode, onModeChange }) => {
   return (
-    <div className="flex lg:grid lg:grid-cols-5 gap-2 p-1.5 bg-slate-100/50 rounded-2xl border border-slate-200 min-w-max lg:min-w-0">
+    <div className="flex lg:grid lg:grid-cols-5 gap-3 p-2 bg-slate-100/80 rounded-[2rem] border border-slate-200 min-w-max lg:min-w-0 shadow-inner">
       {MODES.map((mode) => (
         <button
           key={mode.id}
           onClick={() => onModeChange(mode.id)}
-          className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl transition-all duration-300 whitespace-nowrap ${
+          className={`flex items-center justify-center gap-3 px-6 py-3 rounded-[1.5rem] transition-all duration-500 whitespace-nowrap ${
             currentMode === mode.id
-              ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 scale-[1.02]'
-              : 'bg-white text-slate-600 hover:bg-white hover:text-indigo-600 border border-slate-200'
+              ? 'bg-indigo-950 text-white shadow-[0_10px_25px_rgba(30,27,75,0.2)] scale-[1.05] border-transparent'
+              : 'bg-white/80 text-slate-600 hover:bg-white hover:text-indigo-950 border border-slate-200 shadow-sm'
           }`}
         >
-          <i className={`fa-solid ${mode.icon} text-sm`}></i>
-          <span className="text-[11px] font-extrabold">{mode.title}</span>
+          <i className={`fa-solid ${mode.icon} text-base transition-transform group-hover:scale-125`}></i>
+          <span className="text-[12px] font-black tracking-tight">{mode.title}</span>
         </button>
       ))}
     </div>

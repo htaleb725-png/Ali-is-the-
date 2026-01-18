@@ -41,7 +41,7 @@ const DeveloperPanel: React.FC<DeveloperPanelProps> = ({ onClose }) => {
       <div className="fixed inset-0 bg-slate-950 z-[10000] flex items-center justify-center p-6 animate-fade" dir="rtl">
         <div className="w-full max-w-md space-y-8 text-center">
           <div className="w-20 h-20 bg-indigo-600 rounded-3xl mx-auto flex items-center justify-center shadow-2xl shadow-indigo-500/40">
-            <i className="fa-solid fa-shield-halved text-white text-3xl"></i>
+            <i className="fa-solid fa-vault text-white text-3xl"></i>
           </div>
           <div className="space-y-2">
             <h2 className="text-2xl font-black text-white">منطقة محظورة</h2>
@@ -79,7 +79,7 @@ const DeveloperPanel: React.FC<DeveloperPanelProps> = ({ onClose }) => {
         <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between lg:px-10 lg:py-8">
           <div className="flex items-center gap-4">
             <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center">
-              <i className="fa-solid fa-terminal text-sm"></i>
+              <i className="fa-solid fa-code text-sm"></i>
             </div>
             <div>
               <h2 className="text-lg font-black lg:text-xl">لوحة التحكم المركزية</h2>
@@ -95,10 +95,10 @@ const DeveloperPanel: React.FC<DeveloperPanelProps> = ({ onClose }) => {
           {/* Tabs Navigation */}
           <nav className="flex lg:flex-col p-2 lg:p-6 bg-slate-50 border-b lg:border-b-0 lg:border-l border-slate-200 overflow-x-auto no-scrollbar gap-1 lg:w-64">
             {[
-              { id: 'core', icon: 'fa-microchip', label: 'النواة' },
-              { id: 'ai', icon: 'fa-robot', label: 'الذكاء' },
-              { id: 'stats', icon: 'fa-chart-pie', label: 'النشاط' },
-              { id: 'storage', icon: 'fa-database', label: 'التخزين' }
+              { id: 'core', icon: 'fa-dna', label: 'النواة' },
+              { id: 'ai', icon: 'fa-brain', label: 'الذكاء' },
+              { id: 'stats', icon: 'fa-gauge-high', label: 'النشاط' },
+              { id: 'storage', icon: 'fa-box-archive', label: 'التخزين' }
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -159,7 +159,7 @@ const DeveloperPanel: React.FC<DeveloperPanelProps> = ({ onClose }) => {
                   </div>
 
                   <div className="p-6 bg-slate-50 rounded-3xl border border-slate-200 space-y-4">
-                    <h4 className="font-bold text-slate-700 flex items-center gap-2"><i className="fa-solid fa-globe text-emerald-600"></i> أدوات الربط (Grounding)</h4>
+                    <h4 className="font-bold text-slate-700 flex items-center gap-2"><i className="fa-solid fa-earth-americas text-emerald-600"></i> أدوات الربط (Grounding)</h4>
                     <p className="text-xs text-slate-500">تفعيل المصادر الخارجية لضمان حداثة المعلومات.</p>
                     <div className="flex items-center justify-between p-4 bg-white rounded-2xl border border-slate-100">
                       <span className="text-sm font-bold">Google Search integration</span>

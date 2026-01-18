@@ -5,42 +5,56 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>Academic Ultra AI - بروفيسور الذكاء الاصطناعي</title>
+    <!-- تأمين توافقية البيئة في الاستضافات السحابية -->
+    <script>
+      window.process = window.process || { env: { API_KEY: "" } };
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
     <style>
+      :root {
+        --safe-area-bottom: env(safe-area-inset-bottom);
+      }
       body {
         font-family: 'Tajawal', sans-serif;
-        background-color: #f0f4f8;
+        background-color: #f8fafc;
+        margin: 0;
+        height: 100vh;
         overflow: hidden;
       }
-      .markdown-content p { margin-bottom: 1.5rem; line-height: 1.9; }
-      .markdown-content h1, .markdown-content h2, .markdown-content h3 { font-weight: 900; color: #1e1b4b; margin-top: 2rem; }
-      .markdown-content blockquote { border-right: 5px solid #4f46e5; padding-right: 1.5rem; color: #475569; font-style: italic; }
+      .markdown-content p { margin-bottom: 1.25rem; line-height: 1.8; }
+      .markdown-content h1, .markdown-content h2 { font-weight: 800; color: #0f172a; margin-top: 1.5rem; }
+      .markdown-content ul { list-style: disc; padding-right: 1.5rem; margin-bottom: 1rem; }
       
-      .custom-scrollbar::-webkit-scrollbar { width: 5px; }
-      .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+      .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
       
-      @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(15px); }
+      @keyframes slideUp {
+        from { opacity: 0; transform: translateY(20px); }
         to { opacity: 1; transform: translateY(0); }
       }
-      .animate-fade { animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+      .animate-slide-up { animation: slideUp 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
+      
+      /* تحسين استقرار الواجهة في الجوال */
+      .mobile-input-container {
+        padding-bottom: calc(1.5rem + var(--safe-area-bottom));
+      }
     </style>
-  <script type="importmap">
-{
-  "imports": {
-    "react/": "https://esm.sh/react@^19.2.3/",
-    "react": "https://esm.sh/react@^19.2.3",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "@google/genai": "https://esm.sh/@google/genai@^1.37.0",
-    "react-markdown": "https://esm.sh/react-markdown@^10.1.0",
-    "remark-gfm": "https://esm.sh/remark-gfm@^4.0.1"
-  }
-}
-</script>
-</head>
-  <body class="selection:bg-indigo-200 text-slate-900">
+    <script type="importmap">
+    {
+      "imports": {
+        "react/": "https://esm.sh/react@^19.2.3/",
+        "react": "https://esm.sh/react@^19.2.3",
+        "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+        "@google/genai": "https://esm.sh/@google/genai@^1.37.0",
+        "react-markdown": "https://esm.sh/react-markdown@^10.1.0",
+        "remark-gfm": "https://esm.sh/remark-gfm@^4.0.1"
+      }
+    }
+    </script>
+  </head>
+  <body class="selection:bg-indigo-100 text-slate-900">
     <div id="root"></div>
     <script type="module" src="index.tsx"></script>
   </body>
