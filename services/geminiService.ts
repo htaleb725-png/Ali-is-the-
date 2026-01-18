@@ -13,9 +13,6 @@ export interface FileData {
 export class GeminiService {
   private getAI() {
     const key = process.env.API_KEY || '';
-    if (!key) {
-      console.error("Gemini API Key is missing.");
-    }
     return new GoogleGenAI({ apiKey: key });
   }
 
@@ -36,65 +33,52 @@ export class GeminiService {
       const ai = this.getAI();
       const systemInstruction = this.getInstruction(mode);
       
-      const languageRule = "\nIMPORTANT: Always respond in the same language as the user's message or voice recording (Arabic or English). If the user speaks Arabic, reply in professional Arabic. If English, reply in academic English.";
-
-      // بناء التاريخ بشكل سليم
-      const contents = history.map(item => ({
+      const contents: any[] = history.map(item => ({
         role: item.role === 'user' ? 'user' : 'model',
         parts: [{ text: String(item.content) }]
       }));
 
-      const currentParts: any[] = [{ text: prompt || "تحليل" }];
-      if (fileData) {
-        currentParts.push(fileData);
-      }
+      const currentParts: any[] = [];
+      if (fileData) currentParts.push(fileData);
+      currentParts.push({ text: prompt || "قم بتحليل المحتوى المرفق بأسلوب أكاديمي وبشري." });
 
-      contents.push({
-        role: 'user',
-        parts: currentParts
-      });
+      contents.push({ role: 'user', parts: currentParts });
 
-      // استخدام محرك gemini-3-flash-preview
+      // استخدام Gemini 3 Pro مع أدوات البحث لضمان المصادر
       const response = await ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
+        model: 'gemini-3-pro-preview',
         contents: contents,
         config: {
-          systemInstruction: systemInstruction + languageRule,
-          // جعل البحث مفعلاً فقط في النمط الشامل لتقليل احتمالية الخطأ
-          tools: mode === AcademicMode.GENERAL ? [{ googleSearch: {} }] : undefined,
-          temperature: 0.7,
+          systemInstruction: systemInstruction,
+          tools: [{ googleSearch: {} }],
+          temperature: 0.9, // زيادة الحرارة تعزز العشوائية البشرية في الكتابة
+          topP: 0.95,
         },
       });
 
-      return this.processResponse(response);
+      const text = response.text || "عذراً، لم أتمكن من معالجة الطلب حالياً.";
+      const groundingMetadata = response.candidates?.[0]?.groundingMetadata;
+      const urls = groundingMetadata?.groundingChunks?.map((chunk: any) => ({
+        uri: chunk.web?.uri,
+        title: chunk.web?.title
+      })).filter((u: any) => u.uri) || [];
+
+      return {
+        text: text,
+        groundingUrls: urls
+      };
     } catch (err: any) {
-      console.error("Gemini API Error details:", err);
-      // إرجاع رسالة خطأ واضحة للمستخدم
-      throw new Error(err?.message || "فشل الاتصال بخادم الذكاء الاصطناعي.");
+      console.error("Gemini Service Error:", err);
+      if (err.message?.includes("API_KEY")) {
+        throw new Error("مفتاح API غير صالح أو مفقود.");
+      }
+      throw new Error("فشل الاتصال بالمحرك. يرجى التحقق من جودة الإنترنت.");
     }
-  }
-
-  private processResponse(response: GenerateContentResponse) {
-    if (!response || !response.text) {
-      throw new Error("استجابة فارغة من المحرك.");
-    }
-    
-    const text = response.text;
-    const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
-    
-    const groundingUrls = groundingChunks
-      .filter((chunk: any) => chunk.web)
-      .map((chunk: any) => ({
-        uri: String(chunk.web.uri),
-        title: String(chunk.web.title || chunk.web.uri)
-      }));
-
-    return { text, groundingUrls };
   }
 
   async humanizeText(text: string) {
     return this.generateResponse(
-      `Please rewrite the following text to sound natural and professional, maintaining the original language: \n\n ${text}`,
+      `حول النص التالي إلى أسلوب بشري تماماً (Human-like) بليغ وأكاديمي بحيث يتجاوز كواشف الذكاء الاصطناعي بنسبة 100%: \n\n ${text}`,
       AcademicMode.HUMANIZER
     );
   }

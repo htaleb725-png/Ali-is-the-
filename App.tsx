@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { AcademicMode, Message } from './types';
 import { geminiService, FileData } from './services/geminiService';
 import Sidebar from './components/Sidebar';
@@ -27,7 +27,7 @@ const App: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const history = messages.slice(-6).map(m => ({ // نرسل آخر 6 رسائل فقط لتوفير التوكنز
+      const history = messages.slice(-6).map(m => ({
         role: m.role,
         content: m.content
       }));
@@ -49,21 +49,15 @@ const App: React.FC = () => {
         role: 'assistant',
         content: response.text,
         mode: currentMode,
-        timestamp: new Date(),
-        groundingUrls: response.groundingUrls
+        timestamp: new Date()
       };
 
       setMessages(prev => [...prev, assistantMsg]);
     } catch (error: any) {
-      console.error("API Connection Error:", error);
-      const errorText = error.message.includes("API_KEY") 
-        ? "خطأ: مفتاح API غير موجود أو غير صالح. يرجى مراجعة إعدادات الاستضافة."
-        : "عذراً، حدث خطأ في معالجة طلبك. يرجى المحاولة لاحقاً أو التأكد من اتصالك بالإنترنت.";
-        
       setMessages(prev => [...prev, {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: errorText,
+        content: `**حدث خطأ:** ${error.message}`,
         mode: currentMode,
         timestamp: new Date()
       }]);
@@ -85,25 +79,27 @@ const App: React.FC = () => {
         isHumanized: true
       }]);
     } catch (error) {
-      console.error("Humanizing Error:", error);
+      console.error(error);
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   return (
-    <div className="flex h-screen bg-slate-50 overflow-hidden font-['Tajawal']" dir="rtl">
+    <div className="fixed inset-0 flex bg-[#f8f9fa] overflow-hidden font-['Tajawal'] select-none" dir="rtl">
       {isDevOpen && <DeveloperPanel onClose={() => setIsDevOpen(false)} />}
       
+      {/* Mobile Sidebar Overlay */}
       <div 
-        className={`fixed inset-0 z-[70] bg-slate-950/60 transition-all duration-300 lg:hidden ${
-          isSidebarOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'
-        }`} 
-        onClick={() => setIsSidebarOpen(false)} 
+        className={`fixed inset-0 z-[100] bg-slate-900/40 backdrop-blur-sm lg:hidden transition-opacity duration-300 ${
+          isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={() => setIsSidebarOpen(false)}
       />
       
-      <div className={`fixed inset-y-0 right-0 z-[80] w-72 transition-transform duration-300 lg:relative lg:translate-x-0 ${
-        isSidebarOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'
+      {/* Sidebar Wrapper */}
+      <div className={`fixed inset-y-0 right-0 z-[110] w-72 lg:relative lg:translate-x-0 transition-transform duration-300 ${
+        isSidebarOpen ? 'translate-x-0' : 'translate-x-full'
       }`}>
         <Sidebar 
           onNewChat={() => { setMessages([]); setIsSidebarOpen(false); }}
@@ -112,21 +108,24 @@ const App: React.FC = () => {
         />
       </div>
 
-      <main className="flex-1 flex flex-col h-full relative overflow-hidden safe-top">
-        <header className="glass border-b border-slate-200 px-4 py-3 sticky top-0 z-30 flex flex-col gap-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <button onClick={() => setIsSidebarOpen(true)} className="p-2 text-slate-600 lg:hidden">
-                <i className="fa-solid fa-bars-staggered text-xl"></i>
-              </button>
-              <h1 className="text-lg font-extrabold text-slate-800">الخبير الأكاديمي</h1>
+      <main className="flex-1 flex flex-col h-full overflow-hidden relative">
+        <header className="bg-white border-b border-slate-100 px-4 py-3 z-[60] shadow-sm">
+          <div className="flex items-center justify-between mb-2">
+            <button onClick={() => setIsSidebarOpen(true)} className="p-2 text-slate-500 lg:hidden">
+              <i className="fa-solid fa-bars-staggered text-xl"></i>
+            </button>
+            <div className="flex flex-col items-center">
+              <span className="text-sm font-black text-slate-800">الخبير الأكاديمي</span>
+              <div className="flex items-center gap-1">
+                 <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
+                 <span className="text-[9px] font-bold text-slate-400">Gemini 3 Pro Active</span>
+              </div>
             </div>
-            <div className="flex items-center gap-1">
-              <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
-              <span className="text-[10px] font-bold text-slate-400">ACTIVE</span>
-            </div>
+            <div className="w-8"></div>
           </div>
-          <ModeSelector currentMode={currentMode} onModeChange={(m) => { setCurrentMode(m); setIsSidebarOpen(false); }} />
+          <div className="overflow-x-auto no-scrollbar">
+            <ModeSelector currentMode={currentMode} onModeChange={(m) => { setCurrentMode(m); setIsSidebarOpen(false); }} />
+          </div>
         </header>
 
         <ChatWindow 
