@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { APP_DESCRIPTION, DEVELOPER_CODE } from '../constants';
+import React from 'react';
+import { APP_DESCRIPTION } from '../constants';
 
 interface SidebarProps {
   onNewChat: () => void;
@@ -9,17 +9,8 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ onNewChat, chatCount, onOpenDeveloper }) => {
-  const handleDevClick = () => {
-    const code = prompt("يرجى إدخال رمز الوصول للمطور:");
-    if (code === DEVELOPER_CODE) {
-      onOpenDeveloper();
-    } else if (code !== null) {
-      alert("رمز الوصول غير صحيح.");
-    }
-  };
-
   return (
-    <aside className="w-80 bg-slate-950 text-white flex flex-col h-full hidden md:flex border-l border-slate-800">
+    <aside className="w-full bg-slate-950 text-white flex flex-col h-full border-l border-slate-800 shadow-2xl relative z-[60]">
       <div className="p-6">
         <div className="flex items-center gap-3 mb-8">
           <div className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-blue-700 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-900/20">
@@ -63,12 +54,12 @@ const Sidebar: React.FC<SidebarProps> = ({ onNewChat, chatCount, onOpenDeveloper
         </div>
 
         <button 
-          onClick={handleDevClick}
+          onClick={onOpenDeveloper}
           className="w-full group p-4 bg-slate-900/50 hover:bg-indigo-900/20 rounded-2xl border border-slate-800 hover:border-indigo-800/50 transition-all flex items-center gap-3 text-slate-400 hover:text-indigo-400"
         >
-          <i className="fa-solid fa-code text-sm group-hover:rotate-12 transition-transform"></i>
-          <span className="text-xs font-bold">إعدادات المطور</span>
-          <i className="fa-solid fa-lock text-[10px] mr-auto opacity-30"></i>
+          <i className="fa-solid fa-gear text-sm group-hover:rotate-45 transition-transform"></i>
+          <span className="text-xs font-bold">إعدادات النواة</span>
+          <i className="fa-solid fa-shield-halved text-[10px] mr-auto opacity-30"></i>
         </button>
       </div>
 
@@ -81,7 +72,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onNewChat, chatCount, onOpenDeveloper
             <p className="text-sm font-bold truncate">بروفيسور الذكاء الاصطناعي</p>
             <div className="flex items-center gap-1.5 mt-0.5">
               <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
-              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tight">النظام متصل (Q1 Mode)</p>
+              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tight">متصل (Ultra Mod)</p>
             </div>
           </div>
         </div>
